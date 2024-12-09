@@ -16,7 +16,7 @@ from ansible.errors import AnsibleError, AnsibleOptionsError
 from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 
-from ansible.plugins.plugin_utils._hashi_vault_plugin import HashiVaultPlugin
+from ansible.module_utils.hashi_vault._hashi_vault_plugin import HashiVaultPlugin
 
 display = Display()
 

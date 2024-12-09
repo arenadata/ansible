@@ -157,7 +157,7 @@ from ansible.utils.display import Display
 
 from ansible.module_utils.six import raise_from
 
-from ansible.plugins.plugin_utils._hashi_vault_lookup_base import HashiVaultLookupBase
+from ansible.module_utils.hashi_vault._hashi_vault_lookup_base import HashiVaultLookupBase
 from ansible.module_utils.hashi_vault._hashi_vault_common import HashiVaultValueError
 
 display = Display()
