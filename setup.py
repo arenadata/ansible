@@ -294,7 +294,7 @@ static_setup_params = dict(
     python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*',
     package_dir={'': 'lib',
                  'ansible_test': 'test/lib/ansible_test'},
-    packages=find_packages('lib') + find_packages('test/lib'),
+    packages=find_packages('lib') + find_packages('test/lib') + ['ansible.plugins.plugin_utils'],
     include_package_data=True,
     classifiers=[
         'Development Status :: 5 - Production/Stable',
