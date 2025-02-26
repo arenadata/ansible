@@ -167,7 +167,7 @@ def local_rpm_package_name(path):
 def query_package(module, name):
     # rpm -q returns 0 if the package is installed,
     # 1 if it is not installed
-    rc, out, err = module.run_command([RPM_PATH, "-q", name])
+    rc, out, err = module.run_command([RPM_PATH, "-q", name.replace("=", "-")])
     if rc == 0:
         return True
     else:
@@ -179,6 +179,7 @@ def check_package_version(module, name):
     # if newest version already installed return True
     # otherwise return False
 
+    name = re.split("=", name)[0]
     rc, out, err = module.run_command([APT_CACHE, "policy", name], environ_update={"LANG": "C"})
     installed = re.split("\n |: ", out)[2]
     candidate = re.split("\n |: ", out)[4]
@@ -200,7 +201,7 @@ def query_package_provides(module, name, allow_upgrade=False):
 
         name = local_rpm_package_name(name)
 
-    rc, out, err = module.run_command([RPM_PATH, "-q", "--provides", name])
+    rc, out, err = module.run_command([RPM_PATH, "-q", "--provides", name.replace("=", "-")])
     if rc == 0:
         if not allow_upgrade:
             return True
@@ -277,13 +278,8 @@ def install_packages(module, pkgspec, allow_upgrade=False):
         command = [APT_PATH, "-y", "install"] + packages
         rc, out, err = module.run_command(command, environ_update={"LANG": "C"})
 
-        installed = True
-        for package in pkgspec:
-            if not query_package_provides(module, package, allow_upgrade=False):
-                installed = False
-
         # apt-rpm always have 0 for exit code if --force is used
-        if rc or not installed:
+        if rc:
             module.fail_json(msg="'%s' failed: %s" % (" ".join(command), err))
         else:
             return (True, "%s present(s)" % packages)
@@ -341,7 +337,7 @@ def main():
 
     packages = p['package']
     if p['state'] in ['installed', 'present', 'present_not_latest', 'latest']:
-        (m, out) = install_packages(module, packages, allow_upgrade=p['state'] != 'present_not_latest')
+        (m, out) = install_packages(module, packages, allow_upgrade=p['state'] == 'latest')
         modified = modified or m
         output += out
 
