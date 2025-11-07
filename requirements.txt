@@ -3,6 +3,7 @@
 # packages.  Thus, this should be the loosest set possible (only required
 # packages, not optional ones, and with the widest range of versions that could
 # be suitable)
-jinja2
-PyYAML
-cryptography
+jinja2 == 2.11.3
+PyYAML == 6.0.2
+cryptography == 45.0.7
+markupsafe == 2.0.1
