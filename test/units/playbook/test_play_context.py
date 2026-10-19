@@ -90,3 +90,30 @@ def test_play_context(mocker, parser, reset_cli_args):
     mock_task.no_log = False
     play_context = play_context.set_task_and_variable_override(task=mock_task, variables=all_vars, templar=mock_templar)
     assert play_context.no_log is False
+
+
+@pytest.mark.parametrize('delegated_vars', [
+    {},
+    {'ansible_host': None},
+    {'ansible_host': None, 'ansible_ssh_host': None},
+])
+def test_play_context_delegate_to_no_address(mocker, delegated_vars):
+    mock_task = mocker.MagicMock()
+    mock_task.delegate_to = 'delegated_host'
+    mock_task.remote_user = None
+    mock_task.port = None
+    mock_task.check_mode = None
+    mock_task.diff = None
+
+    mock_templar = mocker.MagicMock()
+    mock_templar.template.side_effect = lambda x: x
+
+    all_vars = dict(
+        inventory_hostname='original_host',
+        ansible_delegated_vars={'delegated_host': dict(delegated_vars, inventory_hostname='original_host')},
+    )
+
+    play_context = PlayContext()
+    play_context = play_context.set_task_and_variable_override(task=mock_task, variables=all_vars, templar=mock_templar)
+
+    assert play_context.remote_addr == 'delegated_host'

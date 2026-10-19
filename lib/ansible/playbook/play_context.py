@@ -231,12 +231,15 @@ class PlayContext(Base):
             # make sure this delegated_to host has something set for its remote
             # address, otherwise we default to connecting to it by name. This
             # may happen when users put an IP entry into their inventory, or if
-            # they rely on DNS for a non-inventory hostname
+            # they rely on DNS for a non-inventory hostname, or if the address
+            # variable is explicitly set to None.
             for address_var in ('ansible_%s_host' % delegated_transport,) + C.MAGIC_VARIABLE_MAPPING.get('remote_addr'):
-                if address_var in delegated_vars:
+                if delegated_vars.get(address_var) is not None:
                     break
             else:
                 display.debug("no remote address found for delegated host %s\nusing its name, so success depends on DNS resolution" % delegated_host_name)
+                for address_var in address_vars:
+                    delegated_vars.pop(address_var, None)
                 delegated_vars['ansible_host'] = delegated_host_name
 
             # reset the port back to the default if none was specified, to prevent
