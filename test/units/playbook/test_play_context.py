@@ -88,3 +88,26 @@ def test_play_context(mocker, parser, reset_cli_args):
     mock_task.no_log = False
     play_context = play_context.set_task_and_variable_override(task=mock_task, variables=all_vars, templar=mock_templar)
     assert play_context.no_log is False
+
+
+@pytest.mark.parametrize('delegated_host_vars, expected_remote_addr, expected_ansible_host', [
+    pytest.param({}, 'delegated.example.com', 'delegated.example.com', id='unset'),
+    pytest.param({'ansible_host': None}, 'delegated.example.com', 'delegated.example.com', id='none'),
+    pytest.param({'ansible_host': None, 'ansible_ssh_host': '10.0.0.2'}, '10.0.0.2', None, id='none_with_ssh_host'),
+    pytest.param({'ansible_host': '10.0.0.1'}, '10.0.0.1', '10.0.0.1', id='set'),
+])
+def test_play_context_delegated_remote_addr(mocker, delegated_host_vars, expected_remote_addr, expected_ansible_host):
+    mock_task = mocker.MagicMock()
+    mock_task.delegate_to = 'delegated.example.com'
+    mock_task.remote_user = None
+    mock_task.check_mode = None
+    mock_task.diff = None
+
+    delegated_vars = dict(delegated_host_vars, inventory_hostname='localhost')
+    all_vars = dict(inventory_hostname='localhost', ansible_delegated_vars={'delegated.example.com': delegated_vars})
+
+    play_context = PlayContext().set_task_and_variable_override(task=mock_task, variables=all_vars, templar=mocker.MagicMock())
+
+    assert play_context.remote_addr == expected_remote_addr
+    # TaskExecutor resolves connection options from these same delegated vars
+    assert delegated_vars.get('ansible_host') == expected_ansible_host
