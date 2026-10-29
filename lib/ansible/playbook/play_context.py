@@ -233,7 +233,8 @@ class PlayContext(Base):
             # may happen when users put an IP entry into their inventory, or if
             # they rely on DNS for a non-inventory hostname, or if the address
             # variable is explicitly set to None.
-            for address_var in ('ansible_%s_host' % delegated_transport,) + C.MAGIC_VARIABLE_MAPPING.get('remote_addr'):
+            address_vars = ('ansible_%s_host' % delegated_transport,) + C.MAGIC_VARIABLE_MAPPING.get('remote_addr')
+            for address_var in address_vars:
                 if delegated_vars.get(address_var) is not None:
                     break
             else:
